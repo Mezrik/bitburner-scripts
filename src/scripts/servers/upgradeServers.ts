@@ -16,7 +16,7 @@ export async function main(ns: NS): Promise<void> {
     servers.forEach((server) => {
       if (ramMedian < ns.getServerMaxRam(server)) return;
 
-      const ram = ns.getServerMaxRam(server) ** 2;
+      const ram = ns.getServerMaxRam(server) * 2;
 
       // If the server is already maxed out, skip it
       if (ns.getPurchasedServerMaxRam() <= ram) {
