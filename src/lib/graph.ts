@@ -68,3 +68,22 @@ export function dfsFreeRam(
 
   return result;
 }
+
+/**
+ * Get all servers that are connected to the current server.
+ */
+export function getAllServersInNetwork(ns: NS): {
+  allServers: string[];
+  ramAvailable: number;
+} {
+  const servers = new Set<string>();
+
+  dfs(ns, ns.getHostname(), servers);
+
+  const totalRamAvailable = Array.from(servers).reduce(
+    (acc, server) => acc + ns.getServerMaxRam(server),
+    0
+  );
+
+  return { allServers: Array.from(servers), ramAvailable: totalRamAvailable };
+}
