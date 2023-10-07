@@ -34,13 +34,13 @@ export function dfs(
  *
  * Throws an error if there is not enough RAM on the network to run the script.
  *
- * @returns List of server hostnames and their free RAM.
+ * @returns List of server hostnames and their free RAM. And total ram of the list.
  */
 export function dfsFreeRam(
   ns: NS,
   ramNeeded: number,
   parent?: string
-): ServerFreeRam[] {
+): [ServerFreeRam[], number] {
   let needed = ramNeeded;
   const discovered = new Set<string>();
 
@@ -66,7 +66,7 @@ export function dfsFreeRam(
     needed -= freeRam;
   }
 
-  return result;
+  return [result, ramNeeded - needed];
 }
 
 /**

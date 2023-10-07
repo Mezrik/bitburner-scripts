@@ -4,28 +4,43 @@ import {
   hackScript,
   weakenScript,
 } from "/constants/hackScriptPaths";
-import { growThreads, hackThreads, weakenThreads } from "/lib/analyzeHacking";
+import {
+  analyzeServerHackGainRate,
+  growThreads,
+  hackThreads,
+  weakenThreads,
+} from "/lib/analyzeHacking";
 import { checkTargetArg } from "/lib/commandChecks";
 import { distributeExecScript } from "/lib/script";
 
 export async function main(ns: NS): Promise<void> {
+  const flags = ns.flags([["log-term", false]]);
+
   const target = ns.args[0];
 
   if (!checkTargetArg(ns, target)) return;
+
+  if (typeof flags["log-term"] !== "boolean") {
+    ns.tprint("Invalid log flag provided.");
+    ns.tprint(`USAGE: run ${ns.getScriptName()} --log-term`);
+
+    return;
+  }
 
   const weakenRamCost = ns.getScriptRam(weakenScript);
   const growRamCost = ns.getScriptRam(growScript);
   const hackRamCost = ns.getScriptRam(hackScript);
 
   // eslint-disable-next-line no-constant-condition
-  while (true) {
+  while (analyzeServerHackGainRate(ns, target) > 0) {
     const weakenThreadsNeeded = weakenThreads(ns, target);
     const growThreadsNeeded = growThreads(ns, target);
     const hackThreadsNeeded = hackThreads(ns, target);
 
-    ns.tprint(
-      `Threads needed - Weaken: ${weakenThreadsNeeded}, Grow: ${growThreadsNeeded}, Hack: ${hackThreadsNeeded}`
-    );
+    if (flags["log-term"])
+      ns.tprint(
+        `Threads needed - Weaken: ${weakenThreadsNeeded}, Grow: ${growThreadsNeeded}, Hack: ${hackThreadsNeeded}`
+      );
 
     try {
       if (weakenThreadsNeeded) {
@@ -34,7 +49,9 @@ export async function main(ns: NS): Promise<void> {
           target,
           weakenScript,
           weakenRamCost,
-          weakenThreadsNeeded
+          weakenThreadsNeeded,
+          ns.getWeakenTime(target),
+          flags["log-term"]
         );
       } else if (growThreadsNeeded) {
         await distributeExecScript(
@@ -42,7 +59,9 @@ export async function main(ns: NS): Promise<void> {
           target,
           growScript,
           growRamCost,
-          growThreadsNeeded
+          growThreadsNeeded,
+          ns.getGrowTime(target),
+          flags["log-term"]
         );
       } else {
         await distributeExecScript(
@@ -50,7 +69,9 @@ export async function main(ns: NS): Promise<void> {
           target,
           hackScript,
           hackRamCost,
-          hackThreadsNeeded
+          hackThreadsNeeded,
+          ns.getHackTime(target),
+          flags["log-term"]
         );
       }
     } catch (e) {

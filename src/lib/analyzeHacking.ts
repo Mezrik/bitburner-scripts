@@ -38,7 +38,6 @@ export function growThreads(ns: NS, target: string): number {
   const maxMoney = ns.getServerMaxMoney(target);
   const money = ns.getServerMoneyAvailable(target) || 1;
 
-  ns.tprint(target, maxMoney / money);
   return Math.ceil(ns.growthAnalyze(target, maxMoney / money));
 }
 
@@ -75,6 +74,12 @@ export function analyzeServerHackGainRate(ns: NS, target: string): number {
 
   const targetServer = ns.getServer(target);
 
+  // Lower difficulty to minimum before calculating costs
+  targetServer.hackDifficulty = targetServer.minDifficulty;
+
+  // Maximize target money before calculating hack gain
+  targetServer.moneyAvailable = targetServer.moneyMax;
+
   const weakenCost =
     weakenRamCost * ns.formulas.hacking.weakenTime(targetServer, currentPlayer);
 
@@ -86,15 +91,10 @@ export function analyzeServerHackGainRate(ns: NS, target: string): number {
     hackRamCost * ns.formulas.hacking.hackTime(targetServer, currentPlayer) +
     (weakenCost * 0.002) / 0.05;
 
-  // Lower difficulty to minimum before calculating grow gain
-  targetServer.hackDifficulty = targetServer.minDifficulty;
-
   const growGain = Math.log(
     ns.formulas.hacking.growPercent(targetServer, 1, currentPlayer, 1)
   );
 
-  // Maximize target money before calculating hack gain
-  targetServer.moneyAvailable = targetServer.moneyMax;
   const hackGain = ns.formulas.hacking.hackPercent(targetServer, currentPlayer);
 
   const allServers = getAllServersInNetwork(ns);

@@ -17,15 +17,19 @@ export async function distributeExecScript(
   target: string,
   script: string,
   scriptRamCost: number,
-  threadsNeeded: number
+  threadsNeeded: number,
+  delay = 2000,
+  log?: boolean
 ): Promise<void> {
   const ramNeeded = scriptRamCost * threadsNeeded;
-  ns.tprint(`Total RAM needed for ${script} ${target}: ${ramNeeded} GB`);
+  if (log)
+    ns.tprint(`Total RAM needed for ${script} ${target}: ${ramNeeded} GB`);
 
-  const servers = dfsFreeRam(ns, ramNeeded, ns.getHostname());
+  const [servers, totalRamFound] = dfsFreeRam(ns, ramNeeded, ns.getHostname());
   let threads = threadsNeeded;
 
-  ns.tprint(`Using servers: ${JSON.stringify(servers)}`);
+  if (log) ns.tprint(`Using servers: ${JSON.stringify(servers)}`);
+
   for (const server of servers) {
     // We don't want to run the script on the target server
     if (server.host === target) continue;
@@ -43,5 +47,5 @@ export async function distributeExecScript(
     threads -= availableUsedThreads;
   }
 
-  await ns.sleep(ns.getWeakenTime(target));
+  await ns.sleep(delay);
 }

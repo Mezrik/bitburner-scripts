@@ -6,6 +6,19 @@ import { median } from "/lib/util";
  * @param ns {NS}
  */
 export async function main(ns: NS): Promise<void> {
+  const flags = ns.flags([["spendPercent", 40]]);
+
+  if (!flags.spendPercent || typeof flags.spendPercent !== "number") {
+    ns.tprint("Invalid spend percentage provided.");
+    ns.tprint(`USAGE: run ${ns.getScriptName()} --spendPercent <percent>`);
+    ns.tprint("Example:");
+    ns.tprint(`> run ${ns.getScriptName()} --spendPercent 40`);
+
+    return;
+  }
+
+  const moneyMultiplier = Math.min(flags.spendPercent, 100) / 100;
+
   const servers = new Set<string>(ns.getPurchasedServers());
 
   while (servers.size > 0) {
@@ -26,7 +39,7 @@ export async function main(ns: NS): Promise<void> {
 
       if (
         ns.getPurchasedServerUpgradeCost(server, ram) <
-        ns.getServerMoneyAvailable("home")
+        ns.getServerMoneyAvailable("home") * moneyMultiplier
       )
         ns.upgradePurchasedServer(server, ram);
     });

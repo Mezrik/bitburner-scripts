@@ -1,6 +1,7 @@
 import { NS } from "@ns";
 import { getAnalyzedServers } from "/lib/analyzeHacking";
 
+// TODO: Better management of daemon processes
 export async function main(ns: NS): Promise<void> {
   const servers = getAnalyzedServers(ns).filter(
     (server) => server.gainRate > 99
