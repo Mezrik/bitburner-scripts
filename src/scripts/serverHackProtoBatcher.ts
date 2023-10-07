@@ -1,11 +1,12 @@
 import { NS } from "@ns";
+import {
+  growScript,
+  hackScript,
+  weakenScript,
+} from "/constants/hackScriptPaths";
 import { growThreads, hackThreads, weakenThreads } from "/lib/analyzeHacking";
 import { checkTargetArg } from "/lib/commandChecks";
 import { distributeExecScript } from "/lib/script";
-
-const weakenScript = "scripts/hack/weaken.js";
-const growScript = "scripts/hack/grow.js";
-const hackScript = "scripts/hack/hack.js";
 
 export async function main(ns: NS): Promise<void> {
   const target = ns.args[0];
